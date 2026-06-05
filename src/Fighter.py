@@ -16,6 +16,7 @@ class Fighter:
     @property
     def age(self) -> int:
         return self._age
+        #._ to store as private and internal use only
         
         #code setter block to check if age is in valid range
     @age.setter
