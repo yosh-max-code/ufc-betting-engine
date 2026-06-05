@@ -8,7 +8,7 @@ class Fighter:
 
                 #these are attributes so no brackets needed when calling it
         self.name = name
-        self.age = age #underscore indication to use @property instead
+        self.age = age # routes through setter for validation
         self.weight_class = weight_class
         self.record = record
 
@@ -44,6 +44,4 @@ class Champion(Fighter):
 
 c1 = Champion('Islam Makhachev', 34, 'Welterweight', '28-1-0', 'Champion')
 print(c1.summary())
-print(c1.title)
-
 
