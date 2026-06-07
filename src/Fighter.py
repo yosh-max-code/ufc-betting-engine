@@ -65,6 +65,7 @@ c1 = Champion('Islam Makhachev', 34, 'Welterweight', '28-1-0', 'Champion')
 print(c1.summary())
 
 
+
 """
 fighter_data = {"name": "Islam Makhachev", "age": 32, "weight_class": "Lightweight", "record": "28-1-0"}
 #centralised parsing to prep for data received in messy formats [ENCAPSULATION]
