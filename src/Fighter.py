@@ -26,6 +26,12 @@ class Fighter:
         else:
             self._age = value
 
+
+    #class method for whole class to parse
+    @classmethod
+    def from_dict(cls, data:dict):
+        return cls(data['name'], data['age'],data['weight_class'], data['record'])
+
     #Method , can only be called with brackets so .summary()
     def summary(self)-> str: #type hint for method
         return(f'{self.name} | Age: {self._age} | {self.weight_class} | W/L/D: {self.record}') 
@@ -46,3 +52,8 @@ class Champion(Fighter):
 c1 = Champion('Islam Makhachev', 34, 'Welterweight', '28-1-0', 'Champion')
 print(c1.summary())
 
+
+fighter_data = {"name": "Islam Makhachev", "age": 32, "weight_class": "Lightweight", "record": "28-1-0"}
+#centralised parsing to prep for data received in messy formats [ENCAPSULATION]
+D1 = Fighter.from_dict(fighter_data) 
+print(D1.summary())
