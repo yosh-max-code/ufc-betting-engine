@@ -20,3 +20,6 @@ for applying method to a whole cls and parsing messy data like dict by extractin
 
 implemented @staticmethod 
 for utility and calculation, in this case a checker for title eligibility if wins are 10 and above in record '10-x-x'
+
+## **08/06/2026** ## 
+implmenting some numpy calculations such as np where for filtering arrays and np.dot to multiply and sum arrays for a single weighted value
