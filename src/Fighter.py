@@ -1,5 +1,5 @@
 
-
+import numpy as np
 
 class Fighter:
     #fighter class method 
@@ -80,3 +80,19 @@ t2 = Fighter.is_title_eligible('9-1-0')
 print(t1)
 print(t2)
 """
+
+"""
+#NP where vectorisation for true and false
+wins = np.array([8, 12, 5, 15, 10])
+eligible = np.where(wins >= 10, True, False)
+print(eligible)
+"""
+
+#fighters normalised stats
+stats = np.array([0.65, 0.80, 0.90])
+#weighting to show how much each matters to the model
+weighting = np.array([0.5, 0.3, 0.2])
+#using np dot to multiply each and sum them all up 
+fighter_score = np.dot(stats, weighting)
+print(round(fighter_score, 3))
+#scaling fighter score using strike, td defense and experience
