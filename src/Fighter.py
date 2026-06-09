@@ -32,6 +32,19 @@ class Fighter:
     def from_dict(cls, data:dict): #cls instead of self
         return cls(data['name'], data['age'],data['weight_class'], data['record'])
     
+    """
+    Method which extracts from a dictionary data set and the values from the keys only being the name age weight and record of each fighter
+
+    Args:
+        data (dict): takes data from dict 
+
+    Returns:
+        returns the fighter instance and their 4 attributes
+    """
+    
+
+
+    
     #static method doesnt need self or cls as its utility for pure calc
     #if fighter has a record of 10 or more wins he is eligible for a title 
     @staticmethod
@@ -42,6 +55,16 @@ class Fighter:
             return True
         else:
             return False 
+        
+    """
+    static method to check if  fighter has a record of 10 or more wins he is eligible for a title
+
+    Args:
+        record (str): the record parameter is a string in array
+    
+    Returns:
+        bool value either true or false to show condition validity 
+    """
 
 
     #Method , can only be called with brackets so .summary()
