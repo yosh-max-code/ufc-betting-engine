@@ -23,3 +23,7 @@ for utility and calculation, in this case a checker for title eligibility if win
 
 ## **08/06/2026** ## 
 implmenting some numpy calculations such as np where for filtering arrays and np.dot to multiply and sum arrays for a single weighted value
+
+## **08/06/2026** ## 
+adding np.clip to keep values clamped between 0 and 1 in probability context
+
