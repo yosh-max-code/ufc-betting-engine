@@ -96,3 +96,7 @@ weighting = np.array([0.5, 0.3, 0.2])
 fighter_score = np.dot(stats, weighting)
 print(round(fighter_score, 3))
 #scaling fighter score using strike, td defense and experience
+
+raw_probs =  np.array([0.3, 1.2, -0.1, 0.85, -0.95])
+clipped_probs = np.clip(raw_probs, 0, 1)
+print(clipped_probs)
