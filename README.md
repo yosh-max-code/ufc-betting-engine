@@ -27,3 +27,30 @@ implmenting some numpy calculations such as np where for filtering arrays and np
 ## **08/06/2026** ## 
 adding np.clip to keep values clamped between 0 and 1 in probability context
 
+### **09/06/2026**
+implemented Google-style docstrings across all methods for production-level documentation
+
+added explicit try/except exception handling with descriptive error messages
+- ValueError raised for invalid record formats in is_title_eligible
+- KeyError caught and re-raised in from_dict for missing fighter fields
+- json.JSONDecodeError handled for malformed JSON feed simulation
+
+implemented JSON parsing using Python's json library
+- json.loads() to parse incoming fight data strings
+
+### **10/06/2026**
+installed pytest and configured project test structure
+- added conftest.py at root level for import resolution
+- added __init__.py to src/ to make it a Python package
+
+wrote unit test suite in tests/test_fighter.py
+- positive, negative and edge case tests for is_title_eligible
+- pytest.fixture for reusable mock fighter data
+- pytest.raises() to verify ValueError on invalid input
+- full Fighter object creation test asserting all attributes
+
+production Git workflow practice
+- feature branching with feature/ naming convention
+- opening and merging Pull Requests on GitHub
+- simulated and resolved a merge conflict locally
+
