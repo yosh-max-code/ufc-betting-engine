@@ -1,3 +1,6 @@
+
+# Unit tests for Fighter class - pytest suite
+
 from src.fighter import Fighter
 import pytest
 
@@ -8,6 +11,7 @@ def fighter_data():
 
 
 # Verifies Fighter object constructs correctly from valid input data
+#makes sure new object attributes gets stored correctly
 def test_fighter_creation(fighter_data):
     f = Fighter(fighter_data["name"], fighter_data["age"], fighter_data["weight_class"], fighter_data["record"])
     assert f.name == fighter_data["name"]
