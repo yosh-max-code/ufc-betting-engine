@@ -30,10 +30,15 @@ class Fighter:
     #class method for whole class to parse
     @classmethod
     def from_dict(cls, data:dict): #cls instead of self
-        return cls(data['name'], data['age'],data['weight_class'], data['record'])
+        try:
+            return cls(data['name'], data['age'],data['weight_class'], data['record'])
+        except KeyError as e:
+            raise ValueError(f"Missing required fighter field: {e}")
+        
     
     """
     Method which extracts from a dictionary data set and the values from the keys only being the name age weight and record of each fighter
+    also includes : Try except block to catch key error if missing when using from dict method to extract data for fighter
 
     Args:
         data (dict): takes data from dict 
@@ -41,8 +46,6 @@ class Fighter:
     Returns:
         returns the fighter instance and their 4 attributes
     """
-    
-
 
     
     #static method doesnt need self or cls as its utility for pure calc
@@ -84,9 +87,10 @@ class Champion(Fighter):
         super().__init__(name, age, weight_class, record)
         self.title = title
 
+"""
 c1 = Champion('Islam Makhachev', 34, 'Welterweight', '28-1-0', 'Champion')
 print(c1.summary())
-
+"""
 
 
 """
@@ -111,6 +115,7 @@ eligible = np.where(wins >= 10, True, False)
 print(eligible)
 """
 
+"""
 #fighters normalised stats
 stats = np.array([0.65, 0.80, 0.90])
 #weighting to show how much each matters to the model
@@ -123,3 +128,8 @@ print(round(fighter_score, 3))
 raw_probs =  np.array([0.3, 1.2, -0.1, 0.85, -0.95])
 clipped_probs = np.clip(raw_probs, 0, 1)
 print(clipped_probs)
+"""
+
+
+#print(Fighter.from_dict({"name": "Islam Makhachev", "age": 32, "record": "27-1-0"}))
+#valye erro eaises
