@@ -65,7 +65,7 @@ class Fighter:
             return False 
         
     """
-    static method to check if  fighter has a record of 10 or more wins he is eligible for a title
+    static method to check if  fighter has a record of 10 or more wins he is eligible for a title SHOT
 
     Args:
         record (str): the record parameter is a string in array

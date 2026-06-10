@@ -1,0 +1,9 @@
+git checkout -b branch-name — create and switch to a new branch
+git push -u origin branch-name — push a new branch to GitHub
+git checkout main — switch back to main
+git pull — sync local main with GitHub
+
+feature/ — adding new functionality
+fix/ — fixing a bug
+hotfix/ — urgent production fix
+chore/ — cleanup, refactoring, no logic changes
