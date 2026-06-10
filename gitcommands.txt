@@ -6,7 +6,7 @@ git merge branch-name — merge a branch into your current branch
 git log --oneline — see recent commit history in compact form
 git status — see which files are changed or staged
 git checkout branch-name — switch to an existing branch (no -b)
-
+git branch -d branch-name
 
 feature/ — adding new functionality
 fix/ — fixing a bug
