@@ -1,5 +1,7 @@
 
 import numpy as np
+import json
+
 
 class Fighter:
     #fighter class method 
@@ -130,6 +132,17 @@ clipped_probs = np.clip(raw_probs, 0, 1)
 print(clipped_probs)
 """
 
-
 #print(Fighter.from_dict({"name": "Islam Makhachev", "age": 32, "record": "27-1-0"}))
-#valye erro eaises
+#value error raises
+
+#JSON FORMAT so str 
+raw_feed = '{"name": "Islam Makhachev", "age": 32, "weight_class": "Lightweight", "record": "27-1-0"}'
+
+try:
+    parsed = json.loads(raw_feed)
+except json.JSONDecodeError as e:
+    raise ValueError(f"Invalid JSON feed received {e}")
+else:
+    print(Fighter.from_dict(parsed).summary())
+
+#JSON parsing using json library json.loads() to parse string into valid format to print (dict)
