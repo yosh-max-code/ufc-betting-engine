@@ -21,11 +21,11 @@ for applying method to a whole cls and parsing messy data like dict by extractin
 implemented @staticmethod 
 for utility and calculation, in this case a checker for title eligibility if wins are 10 and above in record '10-x-x'
 
-## **08/06/2026** ## 
+### **08/06/2026** ## 
 - implmenting some numpy calculations such as np where for filtering arrays and np.dot to multiply and sum arrays for a single weighted value
 - adding np.clip to keep values clamped between 0 and 1 in probability context
 
-## **09/06/2026**
+### **09/06/2026**
 implemented Google-style docstrings across all methods for production-level documentation
 
 added explicit try/except exception handling with descriptive error messages
@@ -36,7 +36,7 @@ added explicit try/except exception handling with descriptive error messages
 implemented JSON parsing using Python's json library
 - json.loads() to parse incoming fight data strings
 
-## **10/06/2026**
+### **10/06/2026**
 installed pytest and configured project test structure
 - added conftest.py at root level for import resolution
 - added __init__.py to src/ to make it a Python package
