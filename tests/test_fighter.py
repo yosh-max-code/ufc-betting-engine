@@ -1,14 +1,17 @@
 from src.fighter import Fighter
 import pytest
 
-
+# pytest.fixture: defines reusable mock data shared across multiple test functions
 @pytest.fixture
 def fighter_data():
     return {"name": "Islam Makhachev", "age": 32, "weight_class": "Lightweight", "record": "28-1-0"}
 
+
+# Verifies Fighter object constructs correctly from valid input data
 def test_fighter_creation(fighter_data):
     f = Fighter(fighter_data["name"], fighter_data["age"], fighter_data["weight_class"], fighter_data["record"])
-    assert f.name == fighter_data["name"]
+    assert f.record == fighter_data["record"]
+
 
 def test_is_title_eligible():
     assert Fighter.is_title_eligible("10-1-0") == True
