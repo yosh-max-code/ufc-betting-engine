@@ -55,7 +55,10 @@ class Fighter:
     @staticmethod
     def is_title_eligible(record: str): 
         win_loss = record.split('-')
-        wins = int(win_loss[0])
+        try:
+            wins = int(win_loss[0])
+        except ValueError:
+            raise ValueError(f'Invalid record format. Expected W-L-D, got: {record}')
         if wins >= 10:
             return True
         else:
