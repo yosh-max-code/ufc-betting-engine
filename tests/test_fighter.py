@@ -10,6 +10,9 @@ def fighter_data():
 # Verifies Fighter object constructs correctly from valid input data
 def test_fighter_creation(fighter_data):
     f = Fighter(fighter_data["name"], fighter_data["age"], fighter_data["weight_class"], fighter_data["record"])
+    assert f.name == fighter_data["name"]
+    assert f.age == fighter_data["age"]
+    assert f.weight_class == fighter_data["weight_class"]
     assert f.record == fighter_data["record"]
 
 
