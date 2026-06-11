@@ -52,3 +52,10 @@ production Git workflow practice
 - opening and merging Pull Requests on GitHub
 - simulated and resolved a merge conflict locally
 
+### **11/06/2026**
+
+- Created src/model.py on branch phase-2-ml-engineering
+- Built a FighterPredictor class with a sklearn Pipeline bundling preprocessing and a model into one object
+- Added a ColumnTransformer to handle mixed data types — StandardScaler for numeric columns (age, strike_accuracy) and OneHotEncoder for categorical columns (stance, weight_class)
+- Refactored to use dependency injection,  model is passed as a parameter with LogisticRegression() as the default, making the class reusable for any - sklearn-compatible model
+- Added XGBClassifier as the production model, instantiated separately as xgb_predictor
