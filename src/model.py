@@ -7,8 +7,7 @@ from sklearn.preprocessing import OneHotEncoder
 
 from xgboost import XGBClassifier
 
-
-
+from sklearn.calibration import CalibratedClassifierCV
 
 class FighterPredictor:
     def __init__(self, model=LogisticRegression()) -> None:
@@ -21,6 +20,9 @@ class FighterPredictor:
 
         self.pipeline = Pipeline(steps=[("preprocessor", self.preprocessor), 
                                         ("classifier", model)])
+        
+        self.calibrated_pipeline = CalibratedClassifierCV(estimator=self.pipeline, method="sigmoid")
+
     
     #StandardScaler rescales every feature so they're all on the same playing field. No stat bullies the others.
     #LogisitcRegression a classification model. You feed it fighter stats and it outputs a probability between 0 and 1
@@ -28,11 +30,16 @@ class FighterPredictor:
 
     def fit(self, x, y):
         self.pipeline.fit(x, y)
+        self.calibrated_pipeline.fit(x, y)
         #showing model histrorical data x = stats, y = winner
 
     def predict_proba(self, x):
         return self.pipeline.predict_proba(x)
         #returns a win probability for a new matchup
+
+    def predict_proba_calibrated(self, x):
+        return self.calibrated_pipeline.predict_proba(x)
+        #returns a win probability for a new matchup calibrated using platt scaling
 
 lr_predictor = FighterPredictor(model=LogisticRegression())
 xgb_predictor = FighterPredictor(model=XGBClassifier())
