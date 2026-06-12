@@ -59,3 +59,9 @@ production Git workflow practice
 - Added a ColumnTransformer to handle mixed data types — StandardScaler for numeric columns (age, strike_accuracy) and OneHotEncoder for categorical columns (stance, weight_class)
 - Refactored to use dependency injection,  model is passed as a parameter with LogisticRegression() as the default, making the class reusable for any - sklearn-compatible model
 - Added XGBClassifier as the production model, instantiated separately as xgb_predictor
+
+### **12/06/2026**
+
+Probability Calibration (Betting Core)
+  - Understand why raw machine learning model scores are not true probabilities.
+  - Learn Platt Scaling and Isotonic Regression to calibrate model outputs into sharp market percentages.
