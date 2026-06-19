@@ -15,8 +15,13 @@ import pandas as pd
 from sklearn.calibration import calibration_curve
 from typing import Tuple
 import matplotlib.pyplot as plt 
+
+
+import shap
+
+
 class FighterPredictor:
-    def __init__(self, model=LogisticRegression()) -> None:
+    def __init__(self, model=XGBClassifier()) -> None:
         
         
 
@@ -72,6 +77,13 @@ class FighterPredictor:
         plt.xlabel("predicted probability")
         plt.ylabel("actual probability")
         plt.show()
+
+    def get_shap_values(self, fighter_df:pd.DataFrame) -> np.ndarray:
+        explainer = shap.TreeExplainer(self.pipeline.named_steps["classifier"])
+        transformed_data = self.pipeline.named_steps["preprocessor"].transform(fighter_df)
+        contributions = explainer.shap_values(transformed_data)
+        return contributions
+
 
 lr_predictor = FighterPredictor(model=LogisticRegression()) 
 xgb_predictor = FighterPredictor(model=XGBClassifier())
