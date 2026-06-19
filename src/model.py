@@ -12,7 +12,8 @@ from sklearn.metrics import roc_auc_score
 from sklearn.calibration import CalibratedClassifierCV
 import pandas as pd
 
-
+from sklearn.calibration import calibration_curve
+from typing import Tuple
 
 class FighterPredictor:
     def __init__(self, model=LogisticRegression()) -> None:
@@ -57,7 +58,12 @@ class FighterPredictor:
         return roc_auc_score(y_true, y_pred_proba)
 
 
-lr_predictor = FighterPredictor(model=LogisticRegression())
+    def get_calibration_curve(self, x:pd.DataFrame, y_true: pd.Series) -> Tuple[np.ndarray, np.ndarray]:
+        y_pred_proba = self.predict_proba_calibrated(x)
+        return calibration_curve(y_true, y_pred_proba)
+
+
+lr_predictor = FighterPredictor(model=LogisticRegression()) 
 xgb_predictor = FighterPredictor(model=XGBClassifier())
          
 
