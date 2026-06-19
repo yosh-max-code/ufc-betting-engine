@@ -65,3 +65,12 @@ production Git workflow practice
 Probability Calibration (Betting Core)
   - Understand why raw machine learning model scores are not true probabilities.
   - Learn Platt Scaling and Isotonic Regression to calibrate model outputs into sharp market percentages.
+
+
+### **19/06/2026**
+
+- Built get_shap_values() method on FighterPredictor using shap.TreeExplainer
+- Method extracts the raw classifier via self.pipeline.named_steps["classifier"], transforms input data via self.pipeline.named_steps["preprocessor"].transform(), - then computes per-feature contributions with explainer.shap_values()
+- Verified output shape (n_fighters, n_features) against synthetic test data in notebooks/test_model_manual.ipynb
+- Used get_feature_names_out() to map SHAP's unlabeled NumPy array columns back to actual feature names (scaler__age, encoder__stance_orthodox, etc.) for readability
+- Confirmed SHAP values correctly attribute positive/negative contributions per fighter, per feature, matching the one-hot encoded preprocessing schema
