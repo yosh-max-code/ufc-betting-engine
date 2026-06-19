@@ -68,7 +68,7 @@ Probability Calibration (Betting Core)
 
 
 ### **19/06/2026**
-
+-LOG LOSS, AUC and calibration curve implementation
 - Built get_shap_values() method on FighterPredictor using shap.TreeExplainer
 - Method extracts the raw classifier via self.pipeline.named_steps["classifier"], transforms input data via self.pipeline.named_steps["preprocessor"].transform(), - then computes per-feature contributions with explainer.shap_values()
 - Verified output shape (n_fighters, n_features) against synthetic test data in notebooks/test_model_manual.ipynb
