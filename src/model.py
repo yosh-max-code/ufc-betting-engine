@@ -8,6 +8,7 @@ from sklearn.preprocessing import OneHotEncoder
 from xgboost import XGBClassifier
 
 from sklearn.metrics import log_loss
+from sklearn.metrics import roc_auc_score
 from sklearn.calibration import CalibratedClassifierCV
 import pandas as pd
 
@@ -46,10 +47,14 @@ class FighterPredictor:
         #returns a win probability for a new matchup calibrated using platt scaling
         #platt scaling [sigmoid] vs isotonic regression 
 
-    def evaluate(self, x: pd.DataFrame, y_true: pd.Series) -> float:
+    def evaluate_logloss(self, x: pd.DataFrame, y_true: pd.Series) -> float:
         y_pred_proba = self.predict_proba_calibrated(x)
         return log_loss(y_true, y_pred_proba)
-        
+        #LOG LOSS CALCULATION
+
+    def evaluate_auc(self, x: pd.DataFrame, y_true: pd.Series) -> float:
+        y_pred_proba = self.predict_proba_calibrated(x)
+        return roc_auc_score(y_true, y_pred_proba)
 
 
 lr_predictor = FighterPredictor(model=LogisticRegression())
