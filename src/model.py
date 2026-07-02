@@ -85,7 +85,7 @@ class FighterPredictor:
         return contributions
 
 
-lr_predictor = FighterPredictor(model=LogisticRegression()) 
+lr_predictor = FighterPredictor(model=LogisticRegression()) S
 xgb_predictor = FighterPredictor(model=XGBClassifier())
          
 
