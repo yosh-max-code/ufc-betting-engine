@@ -25,8 +25,11 @@ class FighterPredictor:
         
         
 
-        self.preprocessor = ColumnTransformer(transformers=[("scaler", StandardScaler(), ["age", "strike_accuracy"]),
-                                                            ("encoder", OneHotEncoder(), ["stance", "weight_class"])])
+        self.preprocessor = ColumnTransformer(transformers=[("scaler", StandardScaler(), ['ko_dif', 'sub_dif', 'height_dif', 'reach_dif',
+                                                                                        'age_dif', 'sig_str_dif', 'avg_sub_att_dif', 'avg_td_dif',
+                                                                                        'lose_streak_dif', 'win_streak_dif', 'dif_odds']),
+                                                                                        
+                                                            ("encoder", OneHotEncoder(handle_unknown='ignore'), ['weight_class', 'R_Stance', 'B_Stance'])])
         #ENCODE non numerical catergories into numbers i.e stance, weightclass
 
         self.pipeline = Pipeline(steps=[("preprocessor", self.preprocessor), 
