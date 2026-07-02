@@ -1,92 +1,82 @@
+
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
 
-def create_fight_differentials(df: pd.DataFrame) -> pd.DataFrame:
+#maps model column name to the raw stat name once R_/B_ prefix is stripped off
+DIFF_COL_MAP = {
+    "ko_dif": "win_by_KO/TKO",
+    "sub_dif": "win_by_Submission",
+    "height_dif": "Height_cms",
+    "reach_dif": "Reach_cms",
+    "age_dif": "age",
+    "sig_str_dif": "avg_SIG_STR_landed",
+    "avg_sub_att_dif": "avg_SUB_ATT",
+    "avg_td_dif": "avg_TD_landed",
+    "lose_streak_dif": "current_lose_streak",
+    "win_streak_dif": "current_win_streak",
+}
 
-    # Initialize our empty list for base columns shared fight data
-    base_columns = []
-    # Loop through all columns to find the shared names like date etc
-    for col in df.columns:
-        if not col.startswith('R_') and not col.startswith('B_'):
-            base_columns.append(col)
-    #print(base_columns)
 
-    #STATS for each fighter side
-    red_cols = []
-    blue_cols = []
+#gets the most recent stat line for a fighter, checks both Red and Blue side
+def get_fighter_snapshot(df: pd.DataFrame, fighter: str) -> pd.Series:
+    #lowercase both sides so capitalization typos still match
+    fighter_lower = fighter.lower()
+    mask = (df["R_fighter"].str.lower() == fighter_lower) | (df["B_fighter"].str.lower() == fighter_lower)
+    matched_rows = df[mask]
 
-    #fighter specific stats and creating a single column for both 
-    clean_columns = []
+    if matched_rows.empty:
+        raise ValueError(f"No fights found for fighter: {fighter!r}")
 
-    # Loop through all columns again to categorize them
-    for col in df.columns:
-        if col.startswith('R_'):
-            red_cols.append(col)
-            clean_name = col.replace('R_', '')
-            clean_columns.append(clean_name)
+    #sort ascending by date, last row is the most recent fight
+    latest_row = matched_rows.sort_values(by="date", ascending=True).iloc[-1]
 
-        elif col.startswith('B_'):
-            blue_cols.append(col)
+    #figure out which side (Red or Blue) fighter was on for that fight
+    if latest_row["R_fighter"].lower() == fighter_lower:
+        prefix = "R_"
+    else:
+        prefix = "B_"
 
-    # Print the length of the lists to verify i caught them all
-    #print(f"Found {len(red_cols)} Red columns and {len(blue_cols)} Blue columns.")
-    #print(clean_columns)
+    #only keep the columns for that side
+    fighter_cols = []
+    for col in latest_row.index:
+        if col.startswith(prefix):
+            fighter_cols.append(col)
 
-    #dataframe for just r_columns sliced from df
-    all_red_cols = base_columns + red_cols
-    red_df = df[all_red_cols]
-    #print(red_df.shape)
+    snapshot = latest_row[fighter_cols]
 
-    all_blue_cols = base_columns + blue_cols
-    blue_df = df[all_blue_cols]
-    #print(blue_df.shape)
+    #strip the prefix off so column names come out clean
+    new_index = []
+    for col in fighter_cols:
+        new_index.append(col.replace(prefix, "", 1))
+    snapshot.index = new_index
 
-    #final columns layout
-    master_headers = base_columns + clean_columns
+    return snapshot
 
-    red_df.columns = master_headers
-    blue_df.columns = master_headers
 
-    #print("Red headers:", red_df.columns[:8])
-    #print("Blue headers:", blue_df.columns[:8])
+#builds one row of stat differentials (fighter_b - fighter_a) in the schema the model expects
+def build_matchup_row(fighter_a: str, fighter_b: str, df: pd.DataFrame) -> pd.DataFrame:
+    snap_a = get_fighter_snapshot(df, fighter_a)
+    snap_b = get_fighter_snapshot(df, fighter_b)
 
-    math_columns = clean_columns
-    red_math_df = red_df[math_columns].select_dtypes(include=['number'])
-    blue_math_df = blue_df[math_columns].select_dtypes(include=['number'])
-    #including only numbered column values for mathematical differentiation
+    row = {}
+    for model_col, base_col in DIFF_COL_MAP.items():
+        value_a = snap_a.get(base_col, 0)
+        value_b = snap_b.get(base_col, 0)
+        row[model_col] = value_b - value_a
+        #Blue minus Red, matches the convention the CSV already uses for its own diffs
 
-    differential_df = blue_math_df - red_math_df
-    #print("Diff columns:", differential_df.columns[:5])
-    #print("Diff shape:", differential_df.shape)
+    row["dif_odds"] = snap_b.get("odds", 0) - snap_a.get("odds", 0)
+    row["weight_class"] = df["weight_class"].mode()[0] #placeholder since no per-fighter weight class is stored
+    row["R_Stance"] = snap_a.get("Stance", "Orthodox")
+    row["B_Stance"] = snap_b.get("Stance", "Orthodox")
 
-    differential_df.columns = [f"dif_{col}" for col in differential_df.columns]
+    return pd.DataFrame([row]) #wrapped in a list so pandas makes a row, not a Series
 
-    final_df = df.join(differential_df)
-
-    return final_df
 
 if __name__ == "__main__":
-    raw_data = pd.read_csv("ufc-master.csv")
-    final_features = create_fight_differentials(raw_data)
+    raw_data = pd.read_csv("data/ufc-master.csv")
+    raw_data["date"] = pd.to_datetime(raw_data["date"])
+    raw_data = raw_data.sort_values(by="date", ascending=True).reset_index(drop=True)
 
-    #fit_transform() is ONLY used on your Training Data (it learns the mean/std and transforms it).
-    #transform() is used on your Test Data or Live Data 
-    """
-    scaler = StandardScaler()
-    scaled_features = scaler.fit_transform(final_features[['dif_odds', 'dif_current_win_streak']])
-    print(final_features[:5])
-    print(scaled_features[:5])
-    """
-
-    #test_rank = final_features['dif_Featherweight_rank'].fillna(16)
-    #print(test_rank.head(10))
-
-    final_features = final_features.sort_values(by='date', ascending=True).reset_index(drop=True)
-    print("First row date:", final_features['date'].iloc[0])
-    print("Last row date:", final_features['date'].iloc[-1])
-    print("First 5 index numbers:", final_features.index[:5].tolist())
-
-
-
-
-    
+    print("First row date:", raw_data["date"].iloc[0])
+    print("Last row date:", raw_data["date"].iloc[-1])
+    print("Rows:", len(raw_data))

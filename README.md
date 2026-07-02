@@ -1,76 +1,98 @@
-# **ufc-betting-engine**
+# UFC Betting Engine
 
-## Developing a UFC Betting engine to further understand data manipulation in context with betting and sports
+Predicts the winner of a UFC matchup between two fighters using their historical
+stats, calibrated to output a real win probability rather than just a class label,
+with SHAP explainability and a market-odds EV comparison.
 
-### **04/06/2026**
-initial project structure setup: adding src, tests, data and notebooks folders
+## What it does
 
-### **05/06/2026**
-implementing classes, __init__ , self, 
-a class for fighter with att(name, age, weight class and record) & added champion method class to check for title
+1. **Loads** historical UFC fight data (`data/ufc-master.csv`, ~7,200 fights).
+2. **Trains** an XGBoost classifier inside a scikit-learn `Pipeline`
+   (`StandardScaler` + `OneHotEncoder` -> `XGBClassifier`), then **calibrates**
+   its probabilities with `CalibratedClassifierCV` (Platt/sigmoid scaling) so a
+   0.70 output actually means ~70% historically, not just "leans yes."
+3. Evaluates on a **chronological** train/test split (80/20 by date, not
+   random) so the reported metrics reflect genuine forward-looking performance
+   rather than leaking future fights into training.
+4. Given two fighter names, builds a live matchup row from each fighter's most
+   recent stat-line and returns a calibrated win probability.
+5. Explains *why* via **SHAP** — which stat differentials (takedown average,
+   win streak, age, etc.) pushed the prediction toward one fighter.
+6. If market odds are supplied, converts them to implied probability and
+   compares against the model's probability to flag betting **EV**
+   (positive EV = model thinks the market is underpricing that fighter).
 
-adding type hints in code to improve clarity and clean practice
+## Results
 
-implemented getter and setter methods using @property and @age.setter for manipulating attribute
-verifying private and public usages of self.age / self._age
+On a chronological 80/20 train/test split:
 
-### **07/06/2026**
-implemented @classmethod
-for applying method to a whole cls and parsing messy data like dict by extracting fighter keys using Fighter.from_dict(Data)
+- **Log-loss:** 0.628
+- **AUC:** 0.711
 
-implemented @staticmethod 
-for utility and calculation, in this case a checker for title eligibility if wins are 10 and above in record '10-x-x'
+(An in-sample eval on the full training set gives an optimistic ~0.54 log-loss —
+the 0.628/0.711 numbers above are the honest, held-out figures.)
 
-### **08/06/2026** ## 
-- implmenting some numpy calculations such as np where for filtering arrays and np.dot to multiply and sum arrays for a single weighted value
-- adding np.clip to keep values clamped between 0 and 1 in probability context
+## Project structure
 
-### **09/06/2026**
-implemented Google-style docstrings across all methods for production-level documentation
+```
+src/
+  fighter.py    Fighter/Champion OOP classes (from/to dict, validation, title eligibility)
+  model.py      FighterPredictor: pipeline, calibration, eval metrics, SHAP
+  features.py   Fighter snapshot lookup + matchup row builder (live inference)
+  predict.py    Entry point: trains the model and runs a sample matchup end to end
+tests/
+  test_fighter.py   Unit tests for Fighter
+  test_predict.py   Unit + integration tests for the feature/prediction pipeline
+data/
+  ufc-master.csv    Historical fight data
+```
 
-added explicit try/except exception handling with descriptive error messages
-- ValueError raised for invalid record formats in is_title_eligible
-- KeyError caught and re-raised in from_dict for missing fighter fields
-- json.JSONDecodeError handled for malformed JSON feed simulation
+## Running it
 
-implemented JSON parsing using Python's json library
-- json.loads() to parse incoming fight data strings
+```bash
+pip install -r requirements.txt
+python -m src.predict
+```
 
-### **10/06/2026**
-installed pytest and configured project test structure
-- added conftest.py at root level for import resolution
-- added __init__.py to src/ to make it a Python package
+This trains the model, prints held-out log-loss/AUC, then runs a sample
+matchup prediction with SHAP breakdown and EV vs sample odds.
 
-wrote unit test suite in tests/test_fighter.py
-- positive, negative and edge case tests for is_title_eligible
-- pytest.fixture for reusable mock fighter data
-- pytest.raises() to verify ValueError on invalid input
-- full Fighter object creation test asserting all attributes
+Run the tests with:
 
-production Git workflow practice
-- feature branching with feature/ naming convention
-- opening and merging Pull Requests on GitHub
-- simulated and resolved a merge conflict locally
+```bash
+pytest tests/
+```
 
-### **11/06/2026**
+## Design notes
 
-- Created src/model.py on branch phase-2-ml-engineering
-- Built a FighterPredictor class with a sklearn Pipeline bundling preprocessing and a model into one object
-- Added a ColumnTransformer to handle mixed data types — StandardScaler for numeric columns (age, strike_accuracy) and OneHotEncoder for categorical columns (stance, weight_class)
-- Refactored to use dependency injection,  model is passed as a parameter with LogisticRegression() as the default, making the class reusable for any - sklearn-compatible model
-- Added XGBClassifier as the production model, instantiated separately as xgb_predictor
+- **Why differentials, not raw stats?** The model is trained on
+  `blue_stat - red_stat` for every numeric feature (reach, age, win streak,
+  etc.) rather than each fighter's raw numbers. This halves the feature space
+  and makes the model side-agnostic — it's learning "what stat gaps predict a
+  win," not memorizing which absolute stat values tend to win, which
+  generalizes better to new fighters.
+- **Why calibrate separately from the base model?** `XGBClassifier.predict_proba`
+  outputs are not guaranteed to be well-calibrated probabilities out of the box
+  — they're good for ranking, less reliable as literal probabilities.
+  `CalibratedClassifierCV` fixes that, which matters a lot for the EV
+  calculation: EV is only meaningful if the model's probability is honest.
+- **Why a chronological split instead of random k-fold?** Fights aren't
+  independent of time — fighter form, weight-class trends, and roster
+  composition all shift over the years. A random split would let the model
+  "see the future" during training and overstate its real performance.
 
-### **12/06/2026**
+## Known limitations / future work
 
-Probability Calibration (Betting Core)
-  - Understand why raw machine learning model scores are not true probabilities.
-  - Learn Platt Scaling and Isotonic Regression to calibrate model outputs into sharp market percentages.
-
-
-### **19/06/2026**
--LOG LOSS, AUC and calibration curve implementation
-- Built get_shap_values() method on FighterPredictor using shap.TreeExplainer
-- Method extracts the raw classifier via self.pipeline.named_steps["classifier"], transforms input data via self.pipeline.named_steps["preprocessor"].transform(), - then computes per-feature contributions with explainer.shap_values()
-- Verified output shape (n_fighters, n_features) against synthetic test data in notebooks/test_model_manual.ipynb
-- Used get_feature_names_out() to map SHAP's unlabeled NumPy array columns back to actual feature names (scaler__age, encoder__stance_orthodox, etc.) for readability
-- Confirmed SHAP values correctly attribute positive/negative contributions per fighter, per feature, matching the one-hot encoded preprocessing schema
+- **No MLflow model registry** — the trained model isn't versioned or
+  persisted; each run retrains from scratch. Fine for a demo/portfolio project,
+  not production-ready.
+- **No Kelly Criterion bankroll backtest** — EV is computed per-matchup but
+  there's no historical simulation of bankroll growth under a staking
+  strategy.
+- **No live odds feed** — odds are passed in manually per prediction rather
+  than pulled from a sportsbook API.
+- **PySpark version** (`spark_features.py`, not included in this repo) was
+  prototyped on Databricks for the same differential feature engineering,
+  proving the pipeline works at Spark scale. Cut from this repo since the
+  dataset (~7K rows) doesn't actually need distributed processing — kept here
+  as a note that the pattern was validated, not because it was needed.
