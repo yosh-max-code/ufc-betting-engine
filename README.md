@@ -74,3 +74,34 @@ Probability Calibration (Betting Core)
 - Verified output shape (n_fighters, n_features) against synthetic test data in notebooks/test_model_manual.ipynb
 - Used get_feature_names_out() to map SHAP's unlabeled NumPy array columns back to actual feature names (scaler__age, encoder__stance_orthodox, etc.) for readability
 - Confirmed SHAP values correctly attribute positive/negative contributions per fighter, per feature, matching the one-hot encoded preprocessing schema
+
+
+### **02/07/2026**
+
+ — PySpark feature engineering on Databricks
+- Ported pandas create_fight_differentials logic to PySpark (src/spark_features.py)
+- Diagnosed and resolved local Windows/Hadoop winutils.exe write limitation by 
+  moving execution to Databricks Community Edition (serverless, Spark Connect)
+- Confirmed full read -> transform -> write pipeline working on Unity Catalog 
+  volumes, verified via _SUCCESS marker and output partition files
+
+ — Model training on real fight data
+- Rebuilt FighterPredictor's ColumnTransformer to use real differential features 
+  (ko_dif, sig_str_dif, dif_odds, physical/streak differentials) and stance/
+  weight_class categoricals, replacing placeholder columns from Phase 2 prototyping
+- Added handle_unknown='ignore' to OneHotEncoder for unseen-category safety at 
+  inference time
+- Built binary target from Winner column; excluded Draw/No Contest fights as 
+  non-binary outcomes
+- Implemented time-based (not random) train/test split to avoid data leakage 
+  and simulate real forward-looking prediction
+- Result: AUC 0.71, log-loss 0.63 on held-out future fights — confirms model 
+  generalizes beyond training data, not just memorizing it
+
+Known limitations (deliberately deferred):
+- src/spark_features.py locally still reflects pre-Databricks version; 
+  Databricks notebook version not yet synced back to repo
+- Databricks Repos/Git integration not set up; class code manually copied 
+  into notebook cells
+- Feature set excludes dedicated stance-matchup encoding (uses R_Stance/
+  B_Stance separately rather than a combined matchup feature)
