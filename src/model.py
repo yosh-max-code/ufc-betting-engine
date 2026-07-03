@@ -88,88 +88,11 @@ class FighterPredictor:
         plt.show()
 
     def get_shap_values(self, fighter_df:pd.DataFrame) -> np.ndarray:
-        #predict_proba_calibrated doesn't use self.pipeline on its own, it actually
-        #uses a couple of fitted copies of it (one per CV fold) and averages their
-        #results together. so explaining that exact prediction means running SHAP
-        #on each fold's copy separately, then averaging those explanations too.
-
-        #the first 11 transformed columns are always the numeric stat diffs, same
-        #order every fold since the scaler never adds or removes columns. everything
-        #after that is one-hot encoded weight_class/stance, and different folds can
-        #see different categories during training, so those column counts don't
-        #line up between folds. easiest fix: average just the 11 numeric columns
-        #across folds, and use the first fold's numbers for the rest.
-
-        numeric_col_count = 11
-
-        total_numeric_shap = None
-        first_fold_full_shap = None
-        first_fold_col_names = None
-
-        for calibrated_classifier in self.calibrated_pipeline.calibrated_classifiers_:
-            fold_pipeline = calibrated_classifier.estimator
-            fold_classifier = fold_pipeline.named_steps["classifier"]
-            fold_preprocessor = fold_pipeline.named_steps["preprocessor"]
-
-            explainer = shap.TreeExplainer(fold_classifier)
-            transformed_data = fold_preprocessor.transform(fighter_df)
-            fold_shap_values = explainer.shap_values(transformed_data)
-
-            if first_fold_full_shap is None:
-                first_fold_full_shap = fold_shap_values
-                first_fold_col_names = fold_preprocessor.get_feature_names_out()
-
-            numeric_part = fold_shap_values[:, 0:numeric_col_count]
-            if total_numeric_shap is None:
-                total_numeric_shap = numeric_part
-            else:
-                total_numeric_shap = total_numeric_shap + numeric_part
-
-        #average the numeric part across however many folds there were
-        num_folds = len(self.calibrated_pipeline.calibrated_classifiers_)
-        average_numeric_shap = total_numeric_shap / num_folds
-
-        #collapse everything down to one value per MODEL_FEATURE_COLS entry.
-        #the 11 numeric diffs map straight across, already averaged above.
-        #weight_class/R_Stance/B_Stance are spread across several one-hot columns
-        #each, so add up all the columns belonging to each one into a single value.
-        collapsed_values = []
-        for i in range(numeric_col_count):
-            collapsed_values.append(average_numeric_shap[0][i])
-
-        #columns from index 11 onward belong to weight_class, R_Stance, B_Stance
-        #in that order, taken from the first fold's SHAP values
-        remaining_names = first_fold_col_names[numeric_col_count:]
-        remaining_values = first_fold_full_shap[0][numeric_col_count:]
-
-        weight_class_total = 0
-        r_stance_total = 0
-        b_stance_total = 0
-        for i in range(len(remaining_names)):
-            col_name = remaining_names[i]
-            if "weight_class" in col_name:
-                weight_class_total = weight_class_total + remaining_values[i]
-            elif "R_Stance" in col_name:
-                r_stance_total = r_stance_total + remaining_values[i]
-            elif "B_Stance" in col_name:
-                b_stance_total = b_stance_total + remaining_values[i]
-
-        collapsed_values.append(weight_class_total)
-        collapsed_values.append(r_stance_total)
-        collapsed_values.append(b_stance_total)
-
-        #wrapped in a list so the shape matches what the rest of the code expects
-        return np.array([collapsed_values])
-
-    def save_model(self, path: str) -> None:
-        joblib.dump(self, path)
-        #dumps the whole object (pipeline + calibrated pipeline) so it doesn't need retraining every time
-
-    @staticmethod
-    def load_model(path: str):
-        return joblib.load(path)
-        #loads back whatever save_model wrote to disk
+        explainer = shap.TreeExplainer(self.pipeline.named_steps["classifier"])
+        transformed_data = self.pipeline.named_steps["preprocessor"].transform(fighter_df)
+        contributions = explainer.shap_values(transformed_data)
+        return contributions
 
 
-lr_predictor = FighterPredictor(model=LogisticRegression())
+lr_predictor = FighterPredictor(model=LogisticRegression()) S
 xgb_predictor = FighterPredictor(model=XGBClassifier())
