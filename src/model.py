@@ -1,3 +1,4 @@
+import joblib
 import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
@@ -14,7 +15,7 @@ import pandas as pd
 
 from sklearn.calibration import calibration_curve
 from typing import Tuple
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 
 
 import shap
@@ -22,19 +23,27 @@ import shap
 
 class FighterPredictor:
     def __init__(self, model=XGBClassifier()) -> None:
-        
-        
 
-        self.preprocessor = ColumnTransformer(transformers=[("scaler", StandardScaler(), ["age", "strike_accuracy"]),
-                                                            ("encoder", OneHotEncoder(), ["stance", "weight_class"])])
+
+
+        self.preprocessor = ColumnTransformer(transformers=[("scaler", StandardScaler(), ['ko_dif', 'sub_dif', 'height_dif', 'reach_dif',
+                                                                                        'age_dif', 'sig_str_dif', 'avg_sub_att_dif', 'avg_td_dif',
+                                                                                        'lose_streak_dif', 'win_streak_dif', 'dif_odds']),
+
+                                                            ("encoder", OneHotEncoder(handle_unknown='ignore'), ['weight_class', 'R_Stance', 'B_Stance'])])
         #ENCODE non numerical catergories into numbers i.e stance, weightclass
 
-        self.pipeline = Pipeline(steps=[("preprocessor", self.preprocessor), 
+        self.pipeline = Pipeline(steps=[("preprocessor", self.preprocessor),
                                         ("classifier", model)])
-        
-        self.calibrated_pipeline = CalibratedClassifierCV(estimator=self.pipeline, method="sigmoid", cv=2)
 
-    
+        self.calibrated_pipeline = CalibratedClassifierCV(estimator=self.pipeline, method="sigmoid", cv=2)
+        #cv=2 means this actually trains 2 separate copies of the pipeline (one per fold)
+        #and averages their answers together for a more honest probability. that's why
+        #get_shap_values below has to loop over multiple fold copies too, instead of
+        #just explaining one model - it's explaining the same averaged prediction this makes.
+        #bump this number up later and get_shap_values just loops over more folds, no other changes needed.
+
+
     #StandardScaler rescales every feature so they're all on the same playing field. No stat bullies the others.
     #LogisitcRegression a classification model. You feed it fighter stats and it outputs a probability between 0 and 1
 
@@ -51,7 +60,7 @@ class FighterPredictor:
     def predict_proba_calibrated(self, x):
         return self.calibrated_pipeline.predict_proba(x)
         #returns a win probability for a new matchup calibrated using platt scaling
-        #platt scaling [sigmoid] vs isotonic regression 
+        #platt scaling [sigmoid] vs isotonic regression
 
     def evaluate_logloss(self, x: pd.DataFrame, y_true: pd.Series) -> float:
         y_pred_proba = self.predict_proba_calibrated(x)
@@ -67,7 +76,7 @@ class FighterPredictor:
     def get_calibration_curve(self, x:pd.DataFrame, y_true: pd.Series) -> Tuple[np.ndarray, np.ndarray]:
         y_pred_proba = self.predict_proba_calibrated(x)
         return calibration_curve(y_true, y_pred_proba)
-        #CALIBRATION CURVE USING TWO ARRAYS ONE ON REAL Y AND ONE ON PREDICTED Y    
+        #CALIBRATION CURVE USING TWO ARRAYS ONE ON REAL Y AND ONE ON PREDICTED Y
 
     def plot_calibration_curve(self, x:pd.DataFrame, y_true:pd.Series) -> None:
         y_pred_proba = self.predict_proba_calibrated(x)[:, 1]
@@ -87,7 +96,3 @@ class FighterPredictor:
 
 lr_predictor = FighterPredictor(model=LogisticRegression()) S
 xgb_predictor = FighterPredictor(model=XGBClassifier())
-         
-
-
-

@@ -1,0 +1,14 @@
+with lightweight_fighters AS(
+  SELECT *
+  FROM fighters
+  WHERE weight_class = 'Lightweight'
+  ),
+  
+  experienced_lightweights AS(
+    SELECT * from lightweight_fighters where wins > 20
+  )
+  SELECT *
+  from experienced_lightweights
+  
+-- CTE sql writing to extract fighter data 
+  
