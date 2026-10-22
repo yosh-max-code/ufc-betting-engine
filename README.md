@@ -2,7 +2,7 @@
 
 Predicts the winner of a UFC matchup between two fighters using their historical
 stats, calibrated to output a real win probability rather than just a class label,
-with SHAP explainability and a market-odds EV comparison.
+with SHAP explainability.
 
 ## What it does
 
@@ -18,9 +18,7 @@ with SHAP explainability and a market-odds EV comparison.
    recent stat-line and returns a calibrated win probability.
 5. Explains *why* via **SHAP** — which stat differentials (takedown average,
    win streak, age, etc.) pushed the prediction toward one fighter.
-6. If market odds are supplied, converts them to implied probability and
-   compares against the model's probability to flag betting **EV**
-   (positive EV = model thinks the market is underpricing that fighter).
+
 
 ## Results
 
